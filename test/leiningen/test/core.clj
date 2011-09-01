@@ -48,3 +48,21 @@
   (is (version-greater-eq? "1.2.3" "1.1.1"))
   (is (version-greater-eq? "1.2.0" "1.2"))
   (is (version-greater-eq? "1.2" "1")))
+
+(deftest test-repositories-for-including-defaults
+  (let [repos (repositories-for sample-project)]
+    (is (get repos "central"))
+    (is (get repos "clojars"))
+    (is (get repos "snapshots"))))
+
+(deftest test-repositories-for-many-repos-ordered
+  (let [repo-names (map #(str "repo" %) (range 20))
+        fake-url-ify #(str % "-url")
+        repos (repositories-for
+                {:omit-default-repositories true
+                 :repositories (map #(vector % (fake-url-ify %))
+                                    repo-names)})]
+    (is (= clojure.lang.PersistentArrayMap (class repos)))
+    (is (= {:url "repo11-url"} (get repos "repo11")))
+    (is (= (map fake-url-ify repo-names) (map :url (vals repos))))))
+

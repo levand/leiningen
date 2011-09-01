@@ -138,10 +138,13 @@ Warning: alpha; subject to change."
 (defn repositories-for
   "Return a map of repositories including or excluding defaults."
   [project]
-  (merge (when-not (:omit-default-repositories project)
-           default-repos)
-         (into {} (for [[id settings] (:repositories project)]
-                    [id (init-settings id settings)]))))
+  (let [project-repos (for [[id settings] (:repositories project)]
+                        [id (init-settings id settings)])
+        all-repos (concat
+                    (when-not (:omit-default-repositories project)
+                      (into [] default-repos))
+                    project-repos)]
+    (apply array-map (mapcat identity all-repos))))
 
 (defn exit
   "Call System/exit. Defined as a function so that rebinding is possible."
