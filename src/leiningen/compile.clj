@@ -34,13 +34,14 @@
   out-of-date class files."
   [project]
   (for [namespace (compilable-namespaces project)
-        :let [rel-source (b/path-for namespace)
+        :let [rel-sources (b/paths-for namespace)
               source (first (sort-by (fn [f] (not (.exists f)))
                                      (for [source-path (:source-paths project)
+                                           rel-source rel-sources
                                            :let [file (io/file source-path rel-source)]]
                                        file)))]
         :when source
-        :let [rel-compiled (.replaceFirst rel-source "\\.clj$" "__init.class")
+        :let [rel-compiled (.replaceFirst (.getName source) "\\.cljc?$" "__init.class")
               compiled (io/file (:compile-path project) rel-compiled)]
         :when (>= (.lastModified source) (.lastModified compiled))]
     namespace))
